@@ -13,11 +13,11 @@ from .normalization_layers import (
 from ..arch_utils.mamba_arch import Mamba
 
 class Jamba(nn.Module):
-    """Mamba model composed of multiple MambaBlocks.
+    """Jamba model composed of multiple JambaBlocks.
 
     Attributes:
         config (MambaConfig): Configuration object for the Mamba model.
-        layers (nn.ModuleList): List of MambaBlocks constituting the model.
+        layers (nn.ModuleList): List of JambaBlocks constituting the model.
     """
 
     def __init__(
@@ -69,6 +69,8 @@ class Jamba(nn.Module):
                     layer_norm_eps,
                     AD_weight_decay,
                     BC_layer_norm,
+
+                    ##hier muss noch was MoE config 
                 )
                 for _ in range(n_layers)
             ]
