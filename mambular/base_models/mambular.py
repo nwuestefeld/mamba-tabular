@@ -16,56 +16,6 @@ from ..arch_utils.embedding_layer import EmbeddingLayer
 
 
 class Mambular(BaseModel):
-    """
-    A PyTorch model for tasks utilizing the Mamba architecture and various normalization techniques.
-
-    Parameters
-    ----------
-    cat_feature_info : dict
-        Dictionary containing information about categorical features.
-    num_feature_info : dict
-        Dictionary containing information about numerical features.
-    num_classes : int, optional
-        Number of output classes (default is 1).
-    config : DefaultMambularConfig, optional
-        Configuration object containing default hyperparameters for the model (default is DefaultMambularConfig()).
-    **kwargs : dict
-        Additional keyword arguments.
-
-    Attributes
-    ----------
-    lr : float
-        Learning rate.
-    lr_patience : int
-        Patience for learning rate scheduler.
-    weight_decay : float
-        Weight decay for optimizer.
-    lr_factor : float
-        Factor by which the learning rate will be reduced.
-    pooling_method : str
-        Method to pool the features.
-    cat_feature_info : dict
-        Dictionary containing information about categorical features.
-    num_feature_info : dict
-        Dictionary containing information about numerical features.
-    embedding_activation : callable
-        Activation function for embeddings.
-    mamba : Mamba
-        Mamba architecture component.
-    norm_f : nn.Module
-        Normalization layer.
-    num_embeddings : nn.ModuleList
-        Module list for numerical feature embeddings.
-    cat_embeddings : nn.ModuleList
-        Module list for categorical feature embeddings.
-    tabular_head : MLP
-        Multi-layer perceptron head for tabular data.
-    cls_token : nn.Parameter
-        Class token parameter.
-    embedding_norm : nn.Module, optional
-        Layer normalization applied after embedding if specified.
-    """
-
     def __init__(
         self,
         cat_feature_info,
@@ -117,28 +67,6 @@ class Mambular(BaseModel):
         if norm_layer == "RMSNorm":
             self.norm_f = RMSNorm(
                 self.hparams.get("d_model", config.d_model), eps=config.layer_norm_eps
-            )
-        elif norm_layer == "LayerNorm":
-            self.norm_f = LayerNorm(
-                self.hparams.get("d_model", config.d_model), eps=config.layer_norm_eps
-            )
-        elif norm_layer == "BatchNorm":
-            self.norm_f = BatchNorm(
-                self.hparams.get("d_model", config.d_model), eps=config.layer_norm_eps
-            )
-        elif norm_layer == "InstanceNorm":
-            self.norm_f = InstanceNorm(
-                self.hparams.get("d_model", config.d_model), eps=config.layer_norm_eps
-            )
-        elif norm_layer == "GroupNorm":
-            self.norm_f = GroupNorm(
-                1,
-                self.hparams.get("d_model", config.d_model),
-                eps=config.layer_norm_eps,
-            )
-        elif norm_layer == "LearnableLayerScaling":
-            self.norm_f = LearnableLayerScaling(
-                self.hparams.get("d_model", config.d_model)
             )
         else:
             raise ValueError(f"Unsupported normalization layer: {norm_layer}")
@@ -201,25 +129,8 @@ class Mambular(BaseModel):
             The output predictions of the model.
         """
         x = self.embedding_layer(num_features, cat_features)
-
-        if self.shuffle_embeddings:
-            x = x[:, self.perm, :]
-
         x = self.mamba(x)
-
-        if self.pooling_method == "avg":
-            x = torch.mean(x, dim=1)
-        elif self.pooling_method == "max":
-            x, _ = torch.max(x, dim=1)
-        elif self.pooling_method == "sum":
-            x = torch.sum(x, dim=1)
-        elif self.pooling_method == "cls_token":
-            x = x[:, -1]
-        elif self.pooling_method == "last":
-            x = x[:, -1]
-        else:
-            raise ValueError(f"Invalid pooling method: {self.pooling_method}")
-
+        x = torch.mean(x, dim=1)
         x = self.norm_f(x)
         preds = self.tabular_head(x)
 
