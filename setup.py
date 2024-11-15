@@ -32,7 +32,7 @@ with open(os.path.join(ROOT_DIR, "requirements.txt")) as f:
 
 
 # get long description from readme file
-with open(os.path.join(ROOT_DIR, "README.md")) as f:
+with open(os.path.join(ROOT_DIR, "README.md", encoding="utf-8")) as f:
     LONG_DESCRIPTION = f.read()
 
 setup(
