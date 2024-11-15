@@ -1,4 +1,4 @@
-from .mambular_config import DefaultMambularConfig
+from .mambular_config import DefaultMambularConfig, DefaultJambularConfig
 from .fttransformer_config import DefaultFTTransformerConfig
 from .resnet_config import DefaultResNetConfig
 from .mlp_config import DefaultMLPConfig
@@ -25,4 +25,5 @@ __all__ = [
     "DefaultNODEConfig",
     "DefaultTabMConfig",
     "DefaultBatchTabRNNConfig",
+    "DefaultJambularConfig",
 ]

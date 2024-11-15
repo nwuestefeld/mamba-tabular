@@ -1,7 +1,7 @@
 from .basemodel import BaseModel
 from .ft_transformer import FTTransformer
 from .lightning_wrapper import TaskModel
-from .mambular import Mambular
+from .mambular import Mambular, Jambular
 from .mlp import MLP
 from .resnet import ResNet
 from .tabtransformer import TabTransformer
@@ -18,4 +18,5 @@ __all__ = [
     "BaseModel",
     "MambaTab",
     "MambAttn",
+    "Jambular",
 ]

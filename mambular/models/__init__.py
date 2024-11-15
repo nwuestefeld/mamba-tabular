@@ -3,7 +3,7 @@ from .fttransformer import (
     FTTransformerLSS,
     FTTransformerRegressor,
 )
-from .mambular import MambularClassifier, MambularLSS, MambularRegressor
+from .mambular import MambularClassifier, MambularLSS, MambularRegressor, JambularClassifier, JambularLSS, JambularRegressor
 from .mlp import MLPLSS, MLPClassifier, MLPRegressor
 from .resnet import ResNetClassifier, ResNetLSS, ResNetRegressor
 from .sklearn_base_classifier import SklearnBaseClassifier
