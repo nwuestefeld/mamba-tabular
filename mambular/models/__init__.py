@@ -69,4 +69,7 @@ __all__ = [
     "BatchTabRNNRegressor",
     "BatchTabRNNClassifier",
     "BatchTabRNNLSS",
+    "JambularClassifier",
+    "JambularRegressor",
+    "JambularLSS",
 ]
