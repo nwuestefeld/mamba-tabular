@@ -10,6 +10,8 @@ from .saint_config import DefaultSAINTConfig
 from .tabm_config import DefaultTabMConfig
 from .tabtransformer_config import DefaultTabTransformerConfig
 from .tabularnn_config import DefaultTabulaRNNConfig
+from .trambular_config import DefaultTrambularConfig
+
 
 __all__ = [
     "DefaultFTTransformerConfig",
@@ -24,4 +26,6 @@ __all__ = [
     "DefaultTabMConfig",
     "DefaultTabTransformerConfig",
     "DefaultTabulaRNNConfig",
+    "DefaultTrambularConfig",
+
 ]

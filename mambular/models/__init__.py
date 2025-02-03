@@ -13,6 +13,7 @@ from .sklearn_base_regressor import SklearnBaseRegressor
 from .tabm import TabMClassifier, TabMLSS, TabMRegressor
 from .tabtransformer import TabTransformerClassifier, TabTransformerLSS, TabTransformerRegressor
 from .tabularnn import TabulaRNNClassifier, TabulaRNNLSS, TabulaRNNRegressor
+from .trambular import TrambularClassifier, TrambularLSS, TrambularRegressor
 
 __all__ = [
     "MLPLSS",
@@ -54,4 +55,7 @@ __all__ = [
     "TabulaRNNClassifier",
     "TabulaRNNLSS",
     "TabulaRNNRegressor",
+    "TrambularClassifier",
+    "TrambularLSS",
+    "TrambularRegressor",
 ]
