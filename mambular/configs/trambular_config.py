@@ -138,3 +138,5 @@ class DefaultTrambularConfig:
 
     # Mamba Version
     mamba_version: str = "mamba-torch"
+
+    conv_bias = True
