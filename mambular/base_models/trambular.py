@@ -124,8 +124,6 @@ class Trambular(BaseModel):
 
 
         x = self.pool_sequence(x)
-
-        x = self.norm_f(x)  # type: ignore
         preds = self.tabular_head(x)
 
         return preds
