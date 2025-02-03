@@ -140,3 +140,6 @@ class DefaultTrambularConfig:
     mamba_version: str = "mamba-torch"
 
     conv_bias = True
+    AD_weight_decay = False
+    BC_layer_norm = False
+
