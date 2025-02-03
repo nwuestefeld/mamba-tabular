@@ -81,10 +81,8 @@ class Trambular(BaseModel):
         self.tramba = Tramba(config)
      
 
-        mlp_input_dim = 0
-        for feature_name, input_shape in num_feature_info.items():
-            mlp_input_dim += input_shape
-        mlp_input_dim += self.hparams.d_model
+       
+        mlp_input_dim = config.d_model
 
         self.tabular_head = MLPhead(
             input_dim=mlp_input_dim,
