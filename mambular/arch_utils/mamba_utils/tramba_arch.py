@@ -45,7 +45,7 @@ class Tramba(nn.Module):
                 dt_max=config.dt_max,
                 dt_min=config.dt_min,
                 dt_init_floor=config.dt_init_floor,
-                norm=config.norm,
+                norm= get_normalization_layer(config), #type: ignore
                 activation=config.activation,
                 bidirectional=config.bidirectional,
                 use_learnable_interaction=config.use_learnable_interaction,
