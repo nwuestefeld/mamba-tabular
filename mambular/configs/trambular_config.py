@@ -124,7 +124,7 @@ class DefaultTrambularConfig:
     shuffle_embeddings: bool = False
 
     # Head Parameters
-    n_heads = 8
+    n_heads:  int = 8
     head_layer_sizes: list = field(default_factory=list)
     head_dropout: float = 0.5
     head_skip_layers: bool = False
@@ -141,7 +141,7 @@ class DefaultTrambularConfig:
     # Mamba Version
     mamba_version: str = "mamba-torch"
 
-    conv_bias = True
-    AD_weight_decay = False
-    BC_layer_norm = False
+    conv_bias: bool  = True
+    AD_weight_decay: bool  = False
+    BC_layer_norm:  bool = False
 
