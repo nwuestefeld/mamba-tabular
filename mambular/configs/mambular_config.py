@@ -137,3 +137,5 @@ class DefaultMambularConfig:
 
     # Mamba Version
     mamba_version: str = "mamba-torch"
+
+    d_conv: int = 4
