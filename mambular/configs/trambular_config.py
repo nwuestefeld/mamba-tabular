@@ -111,6 +111,7 @@ class DefaultTrambularConfig:
     norm: str = "RMSNorm"
     activation: Callable = nn.SiLU()  # noqa: RUF009
     layer_norm_eps: float = 1e-05
+    
 
     # Embedding Parameters
     embedding_activation: Callable = nn.Identity()  # noqa: RUF009
@@ -123,6 +124,7 @@ class DefaultTrambularConfig:
     shuffle_embeddings: bool = False
 
     # Head Parameters
+    n_heads = 8
     head_layer_sizes: list = field(default_factory=list)
     head_dropout: float = 0.5
     head_skip_layers: bool = False

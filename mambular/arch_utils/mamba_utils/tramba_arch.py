@@ -26,7 +26,7 @@ class Tramba(nn.Module):
         encoder_layer = CustomTransformerEncoderLayer(config=config)
         self.encoder = nn.TransformerEncoder(
             encoder_layer,
-            num_layers=config.n_layers,
+            num_layers=1,
             norm=self.norm_f,
         )
         #switch to Mamba class. thats exactly what we are doing in the fwd 
