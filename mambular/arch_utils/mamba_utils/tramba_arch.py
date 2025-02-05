@@ -1,6 +1,6 @@
 import torch.nn as nn
 from ..get_norm_fn import get_normalization_layer
-from .mamba_arch import ResidualBlock
+from .mamba_arch import ResidualBlock, Mamba
 from ..transformer_utils import CustomTransformerEncoderLayer
 
 
@@ -29,7 +29,8 @@ class Tramba(nn.Module):
             num_layers=config.n_layers,
             norm=self.norm_f,
         )
-
+        #switch to Mamba class. thats exactly what we are doing in the fwd 
+        self.mamba = Mamba(config)
         self.layers = nn.ModuleList([
             ResidualBlock(
                 d_model=config.d_model,
@@ -58,8 +59,10 @@ class Tramba(nn.Module):
     def forward(self, x):
         #Transformer followed by  n MambaBlocks
         x = self.encoder(x)
-        for layer in self.layers:
-            x = layer(x)
+        x = self.mamba(x)
+
+       # for layer in self.layers:
+       #     x = layer(x)
         return x
     
 
