@@ -244,7 +244,7 @@ class SklearnBaseRegressor(BaseEstimator):
         val_size: float = 0.2,
         X_val=None,
         y_val=None,
-        max_epochs: int = 100,
+        max_epochs: int = 20, #quick and dirty hardwire to 20
         random_state: int = 101,
         batch_size: int = 128,
         shuffle: bool = True,
