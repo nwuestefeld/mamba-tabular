@@ -16,7 +16,7 @@ from .base_config import BaseConfig
 from .enode_config import DefaultENODEConfig
 from .tangos_config import DefaultTangosConfig
 from .modernnca_config import DefaultModernNCAConfig
-
+from .trambular_config import DefaultTrambularConfig
 __all__ = [
     "DefaultModernNCAConfig",
     "DefaultTangosConfig",
@@ -36,4 +36,5 @@ __all__ = [
     "DefaultTabTransformerConfig",
     "DefaultTabulaRNNConfig",
     "BaseConfig",
+    "DefaultTrambularConfig",
 ]
