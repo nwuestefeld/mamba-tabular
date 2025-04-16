@@ -5,9 +5,8 @@ from ..arch_utils.layer_utils.embedding_layer import EmbeddingLayer
 from ..arch_utils.mamba_utils.tramba_arch import Tramba
 from ..arch_utils.mlp_utils import MLPhead
 from ..configs.trambular_config import DefaultTrambularConfig
-from ..arch_utils.transformer_utils import CustomTransformerEncoderLayer
-from ..configs.tabtransformer_config import DefaultTabTransformerConfig
-from .basemodel import BaseModel
+#from ..arch_utils.transformer_utils import CustomTransformerEncoderLayer
+from .utils.basemodel import BaseModel
 
 
 class Trambular(BaseModel):
