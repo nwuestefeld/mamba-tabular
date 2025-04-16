@@ -53,8 +53,7 @@ class Trambular(BaseModel):
 
     def __init__(
         self,
-        cat_feature_info,
-        num_feature_info,
+        feature_information: tuple,  # Expecting (cat_feature_info, num_feature_info, embedding_feature_info)
         num_classes=1,
         config: DefaultTrambularConfig = DefaultTrambularConfig(),  # noqa: B008
         **kwargs,
@@ -113,7 +112,7 @@ class Trambular(BaseModel):
         if self.hparams.shuffle_embeddings:
             x = x[:, self.perm, :]
 
-        x = self.mamba(x)
+        x = self.tramba(x)
 
         x = self.pool_sequence(x)
 
