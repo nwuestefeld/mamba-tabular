@@ -96,8 +96,9 @@ class DefaultTrambularConfig:
 
     # Architecture Parameters
     d_model: int = 64
-    d_conv: int = 4
     n_layers: int = 4
+    d_conv: int = 4
+    dilation: int = 1
     expand_factor: int = 2
     bias: bool = False
     dropout: float = 0.0
@@ -110,7 +111,9 @@ class DefaultTrambularConfig:
     dt_init_floor: float = 1e-04
     norm: str = "RMSNorm"
     activation: Callable = nn.SiLU()  # noqa: RUF009
-    layer_norm_eps: float = 1e-05
+    conv_bias: bool = False
+    AD_weight_decay: bool = True
+    BC_layer_norm: bool = False
     
 
     # Embedding Parameters
@@ -141,7 +144,4 @@ class DefaultTrambularConfig:
     # Mamba Version
     mamba_version: str = "mamba-torch"
 
-    conv_bias: bool  = True
-    AD_weight_decay: bool  = False
-    BC_layer_norm:  bool = False
 
