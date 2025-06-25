@@ -6,10 +6,13 @@ from ..transformer_utils import CustomTransformerEncoderLayer
 
 
 class Tramba(nn.Module):
-    """Tramba model composed of  MambaBlocks and Attention layers.
+    """Tramba model composed of an Attention layer followed by Mamba Blocks.
+    This model design introdcuces positional invariance by using a Transformer
+    encoder before the Mamba blocks.
+    For more details see the paper: "On Embeddings for Numerical Features in Tabular Deep Learning"
 
     Attributes:
-        config (MambaConfig): Configuration object for the Mamba model.
+        config (TrambularConfig): Configuration object for the Trambular Model.
         layers (nn.ModuleList): List of alternating ResidualBlock (Mamba layers) and
         attention layers constituting the model.
     """
@@ -31,7 +34,7 @@ class Tramba(nn.Module):
             norm=self.norm_f,
         )
         
-        if config.mamba_version == "mamba-torch":
+        if config.mamba_version == "mamba-torch" or config.mamba_version == "mamba_triton":
             self.mamba = Mamba(config)
         else:
             self.mamba = MambaOriginal(config)
