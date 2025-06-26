@@ -312,11 +312,13 @@ class MambaBlock(nn.Module):
         AD_weight_decay=False,
         BC_layer_norm=False,
         use_pscan=False,
+        mamba_version="mamba_torch",
         dilation=1,
     ):
         super().__init__()
 
         self.use_pscan = use_pscan
+        self.mamba_version = mamba_version
 
         if self.use_pscan:
             try:
@@ -514,6 +516,9 @@ class MambaBlock(nn.Module):
 
     def selective_scan_seq(self, x, delta, A, B, C, D):
         _, L, _ = x.shape
+        print(
+            f"delta shape: {delta.shape}, A shape: {A.shape}, B shape: {B.shape}, C shape: {C.shape}, D shape: {D.shape}"
+        )
 
         deltaA = torch.exp(delta.unsqueeze(-1) * A)
         deltaB = delta.unsqueeze(-1) * B.unsqueeze(2)
