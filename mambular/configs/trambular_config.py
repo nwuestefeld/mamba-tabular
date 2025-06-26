@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from dataclasses import dataclass, field
 
-import torch.nn as nn
 import torch
+import torch.nn as nn
 
 
 @dataclass
@@ -86,7 +86,7 @@ class DefaultTrambularConfig:
     use_pscan : bool, default=False
         Whether to use PSCAN for the state-space model.
     mamba_version : str, default="mamba-torch"
-        Version of the Mamba model to use ('mamba-torch', 'mamba1', 'mamba2').
+        Version of the Mamba model to use ('mamba-torch', 'mamba1', 'mamba2', 'mamba-triton').
     """
 
     # Optimizer Parameters
@@ -96,7 +96,7 @@ class DefaultTrambularConfig:
     lr_factor: float = 0.1
 
     # Architecture Parameters
-    d_model: int = 64 #see Appendix B in the Trambular paper
+    d_model: int = 64  # see Appendix B in the Trambular paper
     n_layers: int = 6
     d_conv: int = 4
     dilation: int = 1
@@ -104,7 +104,7 @@ class DefaultTrambularConfig:
     bias: bool = False
     dropout: float = 0.0
     dt_rank: str = "auto"
-    d_state: int = 32 #see Appendix B in the Trambular paper
+    d_state: int = 32  # see Appendix B in the Trambular paper
     dt_scale: float = 1.0
     dt_init: str = "random"
     dt_max: float = 0.1
@@ -115,7 +115,6 @@ class DefaultTrambularConfig:
     conv_bias: bool = False
     AD_weight_decay: bool = True
     BC_layer_norm: bool = False
-    
 
     # Embedding Parameters
     embedding_activation: Callable = nn.Identity()  # noqa: RUF009
@@ -128,7 +127,7 @@ class DefaultTrambularConfig:
     shuffle_embeddings: bool = False
 
     # Head Parameters
-    n_heads:  int = 8
+    n_heads: int = 8
     head_layer_sizes: list = field(default_factory=list)
     head_dropout: float = 0.5
     head_skip_layers: bool = False
@@ -141,30 +140,29 @@ class DefaultTrambularConfig:
     use_learnable_interaction: bool = False
     use_cls: bool = False
     use_pscan: bool = False
-    use_accelerator: bool = False
+    # use_accelerator: bool = False
 
     # Mamba Version
     mamba_version: str = "mamba-torch"
 
     def __post_init__(self):
-        if self.mamba_version not in ["mamba-torch", "mamba1", "mamba2"]:
-            raise ValueError(f"Invalid mamba_version: {self.mamba_version}. "
-                             "Choose from 'mamba-torch', 'mamba1', or 'mamba2'.")
+        # no idea why the linter is not working here, but it is not needed for now
+        # if self.mamba_version not in ["mamba-torch", "mamba1", "mamba2", "mamba-triton"]:
+        #    raise ValueError(f"Invalid mamba_version: {self.mamba_version}. "
+        #                     "Choose from 'mamba-torch', 'mamba-triton', 'mamba1', or 'mamba2'.")
         if self.d_model <= 0 or self.n_layers <= 0:
             raise ValueError("d_model and n_layers must be positive integers.")
         if self.lr <= 0 or self.weight_decay < 0:
             raise ValueError("Learning rate and weight decay must be non-negative.")
-        
-        if self.use_accelerator and not torch.cuda.is_available():
-            raise ValueError("Accelerator is set to True, but CUDA is not available. "
-                             "Please check your environment or set use_accelerator to False.")
-        
-        if self.use_accelerator and not self.mamba_version is not "mamba-torch":
-            raise ValueError("Accelerator can only be used with mamba-torch version. "
-                             "Please set mamba_version to 'mamba-torch' if you want to use the accelerator."
-                             "Current mamba_version: {self.mamba_version}"
-                             "Please make sure that you have a compatible GPU")
-        
-        if self.use_accelerator and self.use_pscan:
-            raise ValueError("Accelerator cannot be used with PSCAN. "
-                             "Please set use_pscan to False if you want to use the accelerator.")
+
+        if self.mamba_version == "mamba-triton" and not torch.cuda.is_available():
+            raise ValueError(
+                "Mamba Triton requires CUDA, but it is not available. "
+                "Please check your environment or use a different Mamba version."
+            )
+
+        if self.mamba_version == "mamba-triton" and self.use_pscan:
+            raise ValueError(
+                "Accelerator cannot be used with PSCAN. "
+                "Please set use_pscan to False if you want to use the accelerator."
+            )

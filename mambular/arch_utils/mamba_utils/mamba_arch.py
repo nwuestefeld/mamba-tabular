@@ -4,6 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from mambular.ops.triton.selective_scan import SelectiveScan  # type: ignore
+
 from ..get_norm_fn import get_normalization_layer
 from ..layer_utils.normalization_layers import LayerNorm, LearnableLayerScaling, RMSNorm
 
@@ -43,9 +45,7 @@ class Mamba(nn.Module):
                     norm=get_normalization_layer(config),  # type: ignore
                     activation=getattr(config, "activation", nn.SiLU()),
                     bidirectional=getattr(config, "bidirectional", False),
-                    use_learnable_interaction=getattr(
-                        config, "use_learnable_interaction", False
-                    ),
+                    use_learnable_interaction=getattr(config, "use_learnable_interaction", False),
                     layer_norm_eps=getattr(config, "layer_norm_eps", 1e-5),
                     AD_weight_decay=getattr(config, "AD_weight_decay", True),
                     BC_layer_norm=getattr(config, "BC_layer_norm", False),
@@ -325,10 +325,7 @@ class MambaBlock(nn.Module):
                 self.pscan = pscan  # Store the imported pscan function
             except ImportError:
                 self.pscan = None  # Set to None if pscan is not available
-                print(
-                    "The 'mambapy' package is not installed. Please install it by running:\n"
-                    "pip install mambapy"
-                )
+                print("The 'mambapy' package is not installed. Please install it by running:\n" "pip install mambapy")
         else:
             self.pscan = None
 
@@ -385,18 +382,16 @@ class MambaBlock(nn.Module):
         else:
             raise NotImplementedError
 
-        dt_fwd = torch.exp(
-            torch.rand(self.d_inner) * (math.log(dt_max) - math.log(dt_min))
-            + math.log(dt_min)
-        ).clamp(min=dt_init_floor)
+        dt_fwd = torch.exp(torch.rand(self.d_inner) * (math.log(dt_max) - math.log(dt_min)) + math.log(dt_min)).clamp(
+            min=dt_init_floor
+        )
         inv_dt_fwd = dt_fwd + torch.log(-torch.expm1(-dt_fwd))
         with torch.no_grad():
             self.dt_proj_fwd.bias.copy_(inv_dt_fwd)
 
         if self.bidirectional:
             dt_bwd = torch.exp(
-                torch.rand(self.d_inner) * (math.log(dt_max) - math.log(dt_min))
-                + math.log(dt_min)
+                torch.rand(self.d_inner) * (math.log(dt_max) - math.log(dt_min)) + math.log(dt_min)
             ).clamp(min=dt_init_floor)
             inv_dt_bwd = dt_bwd + torch.log(-torch.expm1(-dt_bwd))
             with torch.no_grad():
@@ -508,7 +503,9 @@ class MambaBlock(nn.Module):
             )
             delta, B, C = self._apply_layernorms(delta, B, C)
             delta = F.softplus(self.dt_proj_bwd(delta))
-        print(f"delta shape: {delta.shape}, A shape: {A.shape}, B shape: {B.shape}, C shape: {C.shape}, D shape: {D.shape}")
+        print(
+            f"delta shape: {delta.shape}, A shape: {A.shape}, B shape: {B.shape}, C shape: {C.shape}, D shape: {D.shape}"
+        )
         if self.mamba_version == "mamba_triton":
             y = self.selective_scan_triton(x, delta, A, B, C, D)
         else:
@@ -540,11 +537,11 @@ class MambaBlock(nn.Module):
         y = y + D * x
 
         return y
-    
+
     def selective_scan_triton(self, x, delta, A, B, C, D):
         """Selective scan implementation using Triton."""
         # Placeholder for Triton implementation
-        raise NotImplementedError("Triton selective scan is not implemented yet.")
+        return SelectiveScan.apply(x, A, B, C, delta, D)
 
 
 class LearnableFeatureInteraction(nn.Module):
