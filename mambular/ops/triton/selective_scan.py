@@ -3,8 +3,9 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
-from kernel import mamba_tt
 from triton_utils import reduce, reshape_inputs
+
+from mambular.ops.triton.kernel import mamba_tt  # type: ignore
 
 try:
     import triton
