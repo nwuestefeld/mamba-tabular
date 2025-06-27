@@ -505,14 +505,11 @@ class MambaBlock(nn.Module):
             )
             delta, B, C = self._apply_layernorms(delta, B, C)
             delta = F.softplus(self.dt_proj_bwd(delta))
-        print(
-            f"delta shape: {delta.shape}, A shape: {A.shape}, B shape: {B.shape}, C shape: {C.shape}, D shape: {D.shape}"
-        )
-        # if self.mamba_version == "mamba_triton":
-        #     y = self.selective_scan_triton(x, delta, A, B, C, D)
-        # else:
-        print(self.mamba_version)
-        y = self.selective_scan_seq(x, delta, A, B, C, D)
+
+        if self.mamba_version == "mamba_triton":
+            y = self.selective_scan_triton(x, delta, A, B, C, D)
+        else:
+            y = self.selective_scan_seq(x, delta, A, B, C, D)
         return y
 
     def selective_scan_seq(self, x, delta, A, B, C, D):
