@@ -112,6 +112,7 @@ class DefaultTrambularConfig:
     dt_init_floor: float = 1e-04
     norm: str = "RMSNorm"
     activation: Callable = nn.SiLU()  # noqa: RUF009
+    layer_norm_eps: float = 1e-05
     conv_bias: bool = False
     AD_weight_decay: bool = True
     BC_layer_norm: bool = False

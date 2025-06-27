@@ -1,8 +1,9 @@
 import torch.nn as nn
+
 from ..get_norm_fn import get_normalization_layer
-from .mamba_arch import ResidualBlock, Mamba
-from .mamba_original import MambaOriginal
 from ..transformer_utils import CustomTransformerEncoderLayer
+from .mamba_arch import Mamba, ResidualBlock
+from .mamba_original import MambaOriginal
 
 
 class Tramba(nn.Module):
@@ -23,9 +24,8 @@ class Tramba(nn.Module):
     ):
         super().__init__()
         self.config = config
-   
-        
-         # transformer encoder
+
+        # transformer encoder
         self.norm_f = get_normalization_layer(config)
         encoder_layer = CustomTransformerEncoderLayer(config=config)
         self.encoder = nn.TransformerEncoder(
@@ -33,20 +33,22 @@ class Tramba(nn.Module):
             num_layers=1,
             norm=self.norm_f,
         )
-        
-        if config.mamba_version == "mamba-torch" or config.mamba_version == "mamba_triton":
+
+        if config.mamba_version == "mamba-torch" or config.mamba_version == "mamba-triton":
             self.mamba = Mamba(config)
-        else:
+        elif config.mamba_version == "mamba1" or config.mamba_version == "mamba2":
             self.mamba = MambaOriginal(config)
-        
- 
+        else:
+            raise ValueError(
+                f"Invalid mamba_version: {config.mamba_version}. "
+                "Choose from 'mamba-torch','mamba-triton', 'mamba1', or 'mamba2'."
+            )
 
     def forward(self, x):
-        #Transformer followed by  n MambaBlocks
+        # Transformer followed by  n MambaBlocks
         x = self.encoder(x)
         x = self.mamba(x)
 
-       # for layer in self.layers:
-       #     x = layer(x)
+        # for layer in self.layers:
+        #     x = layer(x)
         return x
-    
