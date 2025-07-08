@@ -319,6 +319,7 @@ class MambaBlock(nn.Module):
 
         self.use_pscan = use_pscan
         self.mamba_version = mamba_version
+        print(f"[DEBUG] Mamba version set to: {self.mamba_version}")
 
         if self.use_pscan:
             try:
