@@ -51,6 +51,7 @@ class Mamba(nn.Module):
                     BC_layer_norm=getattr(config, "BC_layer_norm", False),
                     use_pscan=getattr(config, "use_pscan", False),
                     dilation=getattr(config, "dilation", 1),
+                    mamba_version=getattr(config, "mamba_version", "mamba_torch"),
                 )
                 for _ in range(getattr(config, "n_layers", 6))
             ]
@@ -153,6 +154,7 @@ class ResidualBlock(nn.Module):
         BC_layer_norm=False,
         use_pscan=False,
         dilation=1,
+        mamba_version="mamba_torch",
     ):
         super().__init__()
 
@@ -199,6 +201,7 @@ class ResidualBlock(nn.Module):
             BC_layer_norm=BC_layer_norm,
             use_pscan=use_pscan,
             dilation=dilation,
+            mamba_version=mamba_version,  # type: ignore
         )
         self.norm = norm
 
@@ -264,6 +267,8 @@ class MambaBlock(nn.Module):
         Whether to use layer normalization for batch compatibility, by default False.
     use_pscan : bool, optional
         Whether to use the PSCAN mechanism, by default False.
+    mamba_version : str, optional
+        Version of the Mamba architecture to use, either 'mamba_torch' or 'mamba-triton', by default 'mamba_torch'.
 
     Attributes
     ----------
@@ -312,8 +317,8 @@ class MambaBlock(nn.Module):
         AD_weight_decay=False,
         BC_layer_norm=False,
         use_pscan=False,
-        mamba_version="mamba_torch",
         dilation=1,
+        mamba_version="mamba_torch",  # type: ignore
     ):
         super().__init__()
 
