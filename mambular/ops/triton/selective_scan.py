@@ -121,7 +121,7 @@ class SelectiveScan(torch.autograd.Function):
         #    raise ValueError("grad_output_y is None!")
         a, b, c, delta, x, d = ctx.saved_tensors
         # x.retain_grad()
-
+        print("[Debug] D Shape:", d.shape)
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
         # we need to hardwire BLOCKSIZE since we need to know the number of Blocks
@@ -196,9 +196,10 @@ class SelectiveScan(torch.autograd.Function):
         )
         da = da.sum(-1, keepdim=True)
 
+        da, db, dc, ddelta, dx, _ = reshape_inputs(da, db, dc, ddelta, x, y, rev=True)
         if d is not None:
             dd = x
         else:
             dd = None
-        da, db, dc, ddelta, dx, _ = reshape_inputs(da, db, dc, ddelta, x, y, rev=True)
+
         return dx, da, db, dc, ddelta, dd
