@@ -121,6 +121,7 @@ class SelectiveScan(torch.autograd.Function):
         #    raise ValueError("grad_output_y is None!")
         a, b, c, delta, x, d = ctx.saved_tensors
         # x.retain_grad()
+        print("[Debug] grad output y:", grad_output_y.shape)
         print("[Debug] D Shape:", d.shape)
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
@@ -201,5 +202,14 @@ class SelectiveScan(torch.autograd.Function):
             dd = x
         else:
             dd = None
+
+        # TODO: multiply by grad_output_y
+        # dx = dx * grad_output_y
+        # da = da * grad_output_y
+        # db = db * grad_output_y
+        # dc = dc * grad_output_y
+        # ddelta = ddelta * grad_output_y
+        # if d is not None:
+        # dd = dd * grad_output_y
 
         return dx, da, db, dc, ddelta, dd
