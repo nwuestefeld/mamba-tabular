@@ -104,7 +104,7 @@ def mamba_tt(
             dh2_0 = tl.load(dH_0 + 1 * h_off + NxDx1_H) * (Ks == K - 1)
             delta_shift = tl.load(Delta + DxK + 1, (Ks + kid) < L - 1, 0)
             a_s, _ = discretize_tt(a, b, delta_shift)
-            dh1, dh = ssm_scan(a_s, c * dy, dh2_0, reversed=1, dim=2)
+            dh1, dh = ssm_scan(a_s, c * dy, dh2_0, rev=1, dim=2)
             if step == 1:
                 tl.store(dH + 0 * h_off + NxDx1_H + 0 * Ks, dh1, Ks == 0)
                 tl.store(dH + 1 * h_off + NxDx1_H + 0 * Ks, dh, Ks == 0)

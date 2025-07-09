@@ -43,6 +43,11 @@ class SelectiveScan(torch.autograd.Function):
             BLOCKS = BLOCKS + 1
             padded = True
 
+        if D >= 16:
+            D_step = 8
+        else:
+            D_step = D
+
         # make placeholders
         dx, db, dc, ddelta = (torch.zeros_like(b).float().cuda() for b in [x, b, c, delta])
         da = torch.zeros(Ba, N, D, BLOCKS).float().cuda()
@@ -72,7 +77,7 @@ class SelectiveScan(torch.autograd.Function):
             step=1,
             L=L,
             K=BLOCKSIZE,
-            D_step=D,
+            D_step=D_step,
             D=D,
             N=N,
         )
@@ -99,7 +104,7 @@ class SelectiveScan(torch.autograd.Function):
             step=2,
             L=L,
             K=BLOCKSIZE,
-            D_step=D,
+            D_step=D_step,
             D=D,
             N=N,
         )
@@ -123,10 +128,15 @@ class SelectiveScan(torch.autograd.Function):
         BLOCKSIZE = 16
         BLOCKS = math.ceil(L / BLOCKSIZE)
         print("Sequence_length:", L)
-        print("Number of Blcoks:", BLOCKS)
+        print("Number of Blocks:", BLOCKS)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
             padded = True
+
+        if D >= 16:
+            D_step = 8
+        else:
+            D_step = D
         dx, da, db, dc, ddelta = (torch.zeros_like(b).float().cuda() for b in [x, a, b, c, delta])
         da = torch.zeros(Ba, N, D, L).float().cuda()
         y, dy = (torch.ones(Ba, 1, D, L).float().cuda() for _ in range(2))
@@ -153,7 +163,7 @@ class SelectiveScan(torch.autograd.Function):
             step=1,
             L=L,
             K=BLOCKSIZE,
-            D_step=D,
+            D_step=D_step,
             D=D,
             N=N,
         )
@@ -180,7 +190,7 @@ class SelectiveScan(torch.autograd.Function):
             step=2,
             L=L,
             K=BLOCKSIZE,
-            D_step=D,
+            D_step=D_step,
             D=D,
             N=N,
         )
