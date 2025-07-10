@@ -90,9 +90,6 @@ def mamba_tt(
             tl.store(H + 0 * h_off + NxDx1_H + 0 * Ks, h1, Ks == K - 1)  # sram to hbm
             tl.store(H + 1 * h_off + NxDx1_H + 0 * Ks, h2, Ks == K - 1)
         if step == 2:
-            # tl.static_print(h2)
-            # tl.store(H_0 + 1 * h_off + NxDx1_H + 0*Ks, h2, Ks==K-1)
-            # tl.store(H_0 + 0 * h_off + NxDx1_H + 0*Ks, h1, Ks==K-1)
             y = tl.sum(c * h2, 0, 1)  # +D*x
             tl.store(Y + DxK, y)
         # tl.store(Out+bid*N*D*L+ Ns*D*L + Ds*L +(Ks+kid),h2)
@@ -114,6 +111,7 @@ def mamba_tt(
             rh2 = roll(h2, 2)
             rh2 = h2_0 * (Ks == 0) + rh2 * (Ks > 0)
             da, db, ddelta = discretize_back(a, b, delta, dh * rh2, dh * x)
+            tl.static_print(da.shape)
             # Save (sums keep_dims=1)
             tl.store(dX + DxK, tl.sum(b_ * dh, 0, 1))
             tl.store(dA + NxDx1_H, tl.sum(da, 2, 1))
