@@ -127,8 +127,8 @@ class SelectiveScan(torch.autograd.Function):
         #    raise ValueError("grad_output_y is None!")
         a, b, c, delta, x, d = ctx.saved_tensors
         # x.retain_grad()
-        print("[Debug] grad output y:", grad_output_y.shape)
-        print("[Debug] D Shape:", d.shape)
+        # print("[Debug] grad output y:", grad_output_y.shape)
+        # print("[Debug] D Shape:", d.shape)
 
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
@@ -209,17 +209,16 @@ class SelectiveScan(torch.autograd.Function):
             N=N,
         )
 
-        if d is not None:
-            dd = x
-            print("[Debug] dd shape:", dd.shape)
-            print("[Debug] grad_output_y shape:", grad_output_y.shape)
-            dd = dd * grad_output_y  # Ba,L,D *Ba,L,D
-            dd = dd.sum((0, 1), keepdim=False)  # Ba,L,D -> D
-        else:
-            dd = None
-
         grad_output_y = grad_output_y.permute(0, 2, 1).unsqueeze(1).contiguous()  #  Ba,1,D,L
 
+        if d is not None:
+            dd = x
+            # print("[Debug] dd shape:", dd.shape)
+            # print("[Debug] grad_output_y shape:", grad_output_y.shape)
+            dd = dd * grad_output_y  # Ba,1,D,L*Ba,1,D,L
+            dd = dd.squeeze(1).sum((0, 2), keepdim=False).contiguous()  # Ba,1,D,L -> D
+        else:
+            dd = None
         dx = dx * grad_output_y  # Ba,1,D,L * Ba,1,D,L -> Ba,1,D,L
         dx = dx.squeeze(1).permute(0, 2, 1).contiguous()  # Ba,1,D,L -> Ba,L,D
 
