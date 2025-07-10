@@ -324,7 +324,6 @@ class MambaBlock(nn.Module):
 
         self.use_pscan = use_pscan
         self.mamba_version = mamba_version
-        print(f"[DEBUG] Mamba version set to: {self.mamba_version}")
 
         if self.use_pscan:
             try:
@@ -545,7 +544,6 @@ class MambaBlock(nn.Module):
 
     def selective_scan_triton(self, x, delta, A, B, C, D):
         """Selective scan implementation using Triton."""
-        print("Using Triton for selective scan.")
         return SelectiveScan.apply(x, A, B, C, delta, D)
 
 
