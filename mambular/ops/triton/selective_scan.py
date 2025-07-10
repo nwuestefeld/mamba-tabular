@@ -211,6 +211,8 @@ class SelectiveScan(torch.autograd.Function):
 
         if d is not None:
             dd = x
+            print("[Debug] dd shape:", dd.shape)
+            print("[Debug] grad_output_y shape:", grad_output_y.shape)
             dd = dd * grad_output_y  # Ba,L,D *Ba,L,D
             dd = dd.sum((0, 1), keepdim=False)  # Ba,L,D -> D
         else:
