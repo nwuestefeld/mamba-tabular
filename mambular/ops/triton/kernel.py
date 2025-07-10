@@ -8,7 +8,7 @@ except ImportError:
     triton = None
     tl = None
 if triton is None or tl is None:
-    raise ImportError("Triton is not installed. Please install Triton to use this module.")
+    raise ImportError("Triton is not installed. Please install Triton to use this Mamba-Triton.")
 
 from mambular.ops.triton.triton_utils import discretize_back, discretize_tt, roll, ssm_scan
 

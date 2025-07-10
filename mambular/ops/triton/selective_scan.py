@@ -42,8 +42,6 @@ class SelectiveScan(torch.autograd.Function):
         BLOCKSIZE = 16
 
         BLOCKS = math.ceil(L / BLOCKSIZE)
-        print("Sequence_length:", L)
-        print("Number of Blocks:", BLOCKS)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
             padded = True
@@ -126,9 +124,6 @@ class SelectiveScan(torch.autograd.Function):
         # if grad_output_y is None:
         #    raise ValueError("grad_output_y is None!")
         a, b, c, delta, x, d = ctx.saved_tensors
-        # x.retain_grad()
-        # print("[Debug] grad output y:", grad_output_y.shape)
-        # print("[Debug] D Shape:", d.shape)
 
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
@@ -140,8 +135,6 @@ class SelectiveScan(torch.autograd.Function):
         # we need to hardwire BLOCKSIZE since we need to know the number of Blocks
         BLOCKSIZE = 16
         BLOCKS = math.ceil(L / BLOCKSIZE)
-        print("Sequence_length:", L)
-        print("Number of Blocks:", BLOCKS)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
             padded = True
@@ -213,8 +206,6 @@ class SelectiveScan(torch.autograd.Function):
 
         if d is not None:
             dd = x
-            # print("[Debug] dd shape:", dd.shape)
-            # print("[Debug] grad_output_y shape:", grad_output_y.shape)
             dd = dd * grad_output_y  # Ba,1,D,L*Ba,1,D,L
             dd = dd.squeeze(1).sum((0, 2), keepdim=False).contiguous()  # Ba,1,D,L -> D
         else:

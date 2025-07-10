@@ -128,8 +128,6 @@ def simple_ssm_tt(X, A, B, C, Y, K: tl.constexpr):  # simple associative scan
 
 
 # upsweep on HBM (its basically the upsweep of the blelloch scan as described in Trambular)
-
-
 def reduce(v, rev, batch=1):
     if rev:
         v[0, :] = v[0].flip(-1)
