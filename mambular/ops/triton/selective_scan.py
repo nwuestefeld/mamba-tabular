@@ -29,10 +29,15 @@ class SelectiveScan(torch.autograd.Function):
                 # throw error
                 raise ValueError(f"Expected input with 3 or 4 dimensions, got {x.dim()}D tensor.")
 
-        # Check shapes
-        # assert b.shape == c.shape
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
+
+        # staging bounds are based on gut feeling. Might need to be adjusted
+        # use async instruction copy. May lead to less comparibility with older hardware
+        if N * D <= 256:
+            num_stages = 1
+        else:
+            num_stages = 2
 
         BLOCKSIZE = 16
 
@@ -107,6 +112,7 @@ class SelectiveScan(torch.autograd.Function):
             D_step=D_step,
             D=D,
             N=N,
+            num_stages=num_stages,
         )
         ctx.save_for_backward(a, b, c, delta, x, d)
 
@@ -123,8 +129,14 @@ class SelectiveScan(torch.autograd.Function):
         # x.retain_grad()
         print("[Debug] grad output y:", grad_output_y.shape)
         print("[Debug] D Shape:", d.shape)
+
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
+
+        if N * D <= 256:
+            num_stages = 1
+        else:
+            num_stages = 2
         # we need to hardwire BLOCKSIZE since we need to know the number of Blocks
         BLOCKSIZE = 16
         BLOCKS = math.ceil(L / BLOCKSIZE)
@@ -167,6 +179,7 @@ class SelectiveScan(torch.autograd.Function):
             D_step=D_step,
             D=D,
             N=N,
+            num_stages=num_stages,
         )
         reduce(h, False, Ba * N * D)
         reduce(dh, True, Ba * N * D)
@@ -195,21 +208,29 @@ class SelectiveScan(torch.autograd.Function):
             D=D,
             N=N,
         )
-        da = da.sum(-1, keepdim=True)
 
-        da, db, dc, ddelta, dx, _ = reshape_inputs(da, db, dc, ddelta, x, y, rev=True)
         if d is not None:
             dd = x
+            dd = dd * grad_output_y  # Ba,L,D *Ba,L,D
+            dd = dd.sum((0, 1), keepdim=False)  # Ba,L,D -> D
         else:
             dd = None
 
-        # TODO: multiply by grad_output_y
-        # dx = dx * grad_output_y
-        # da = da * grad_output_y
-        # db = db * grad_output_y
-        # dc = dc * grad_output_y
-        # ddelta = ddelta * grad_output_y
-        # if d is not None:
-        # dd = dd * grad_output_y
+        grad_output_y = grad_output_y.permute(0, 2, 1).unsqueeze(1).contiguous()  #  Ba,1,D,L
+
+        dx = dx * grad_output_y  # Ba,1,D,L * Ba,1,D,L -> Ba,1,D,L
+        dx = dx.squeeze(1).permute(0, 2, 1).contiguous()  # Ba,1,D,L -> Ba,L,D
+
+        da = da * grad_output_y  # Ba,N,D,L * Ba,1,D,L -> Ba,N,D,L
+        da = da.sum(dim=0, keepdim=False).sum(dim=-1, keepdim=False).permute(1, 0).contiguous()  # Ba,N,D,L -> D,N
+
+        db = db * grad_output_y  # Ba,N,1,L * Ba,1,D,L -> Ba,N,D,L we need Ba,L,N
+        db = db.sum(-2, keepdim=False).permute(0, 2, 1).contiguous()  # Ba,N,D,L -> Ba,L,N
+
+        dc = dc * grad_output_y  # Ba,N,1,L * Ba,1,D,L -> Ba,N,D,L we need Ba,L,N
+        dc = dc.sum(-2, keepdim=False).permute(0, 2, 1).contiguous()  # Ba,N,D,L -> Ba,L,N
+
+        ddelta = ddelta * grad_output_y  # Ba,1,D,L * Ba,1,D,L -> Ba,1,D,L we need Ba,L,D
+        ddelta = ddelta.squeeze(1).permute(0, 2, 1).contiguous()
 
         return dx, da, db, dc, ddelta, dd
