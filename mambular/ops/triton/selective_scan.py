@@ -39,14 +39,14 @@ class SelectiveScan(torch.autograd.Function):
         else:
             num_stages = 2
 
-        BLOCKSIZE = 16
+        BLOCKSIZE = 32
 
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
             padded = True
 
-        if D >= 16:
+        if D >= 64:
             D_step = 8
         else:
             D_step = D
