@@ -47,7 +47,7 @@ class SelectiveScan(torch.autograd.Function):
             padded = True
 
         if D >= 32:
-            D_step = 16
+            D_step = 4
         else:
             D_step = D
 
@@ -56,9 +56,9 @@ class SelectiveScan(torch.autograd.Function):
         # (torch.zeros_like(b).float().cuda() for b in [x, b, c, delta])
         da = None
         # torch.zeros(Ba, N, D, BLOCKS).float().cuda()
-        y, dy = (torch.ones(Ba, 1, D, L, dtype=torch.float16, device="cuda") for _ in range(2))
-        h, dh = (torch.zeros(2, 2, Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda") for _ in range(2))
-        # with padding
+        y = torch.ones(Ba, 1, D, L, dtype=torch.float16, device="cuda")
+        h = torch.zeros(2, 2, Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda")
+        dh, dy = None, None
 
         mamba_tt[(BLOCKS, Ba)](
             x,
@@ -84,6 +84,7 @@ class SelectiveScan(torch.autograd.Function):
             D_step=D_step,
             D=D,
             N=N,
+            num_stages=num_stages,
         )
         reduce(h, False, Ba * N * D)
         # reduce(dh, True, Ba * N * D)
@@ -141,13 +142,14 @@ class SelectiveScan(torch.autograd.Function):
             padded = True
 
         if D >= 32:
-            D_step = 16
+            D_step = 4
         else:
             D_step = D
 
         dx, db, dc, ddelta = (torch.zeros_like(b).half().cuda() for b in [x, b, c, delta])
         da = torch.zeros(Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda")
-        y, dy = (torch.ones(Ba, 1, D, L, dtype=torch.float16, device="cuda") for _ in range(2))
+        dy = torch.ones(Ba, 1, D, L, dtype=torch.float16, device="cuda")
+        y = None
         h, dh = (torch.zeros(2, 2, Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda") for _ in range(2))
         # assert BLOCKS == SEQLEN // K
         mamba_tt[(BLOCKS, Ba)](
@@ -202,6 +204,7 @@ class SelectiveScan(torch.autograd.Function):
             D_step=D_step,
             D=D,
             N=N,
+            num_stages=num_stages,
         )
 
         grad_output_y = grad_output_y.permute(0, 2, 1).unsqueeze(1).contiguous()  #  Ba,1,D,L

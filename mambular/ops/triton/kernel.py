@@ -88,7 +88,7 @@ def mamba_tt(
         if step == 1:
             tl.store(H + 0 * h_off + NxDx1_H + 0 * Ks, h1, Ks == K - 1)  # sram to hbm
             tl.store(H + 1 * h_off + NxDx1_H + 0 * Ks, h2, Ks == K - 1)
-        if step == 2:
+        if step == 2 and back == 0:
             y = tl.sum(c * h2, 0, 1)  # Optional: integrate skip connection here for performance
             tl.store(Y + DxK, y, mask=mask)  # store output
 
