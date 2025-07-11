@@ -144,6 +144,7 @@ class SelectiveScan(torch.autograd.Function):
             D_step = 16
         else:
             D_step = D
+
         dx, db, dc, ddelta = (torch.zeros_like(b).half().cuda() for b in [x, b, c, delta])
         da = torch.zeros(Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda")
         y, dy = (torch.ones(Ba, 1, D, L, dtype=torch.float16, device="cuda") for _ in range(2))
@@ -214,8 +215,11 @@ class SelectiveScan(torch.autograd.Function):
         dx = dx * grad_output_y  # Ba,1,D,L * Ba,1,D,L -> Ba,1,D,L
         dx = dx.squeeze(1).permute(0, 2, 1).contiguous()  # Ba,1,D,L -> Ba,L,D
 
-        da = da * grad_output_y  # Ba,N,D,L * Ba,1,D,L -> Ba,N,D,L
-        da = da.sum(dim=0, keepdim=False).sum(dim=-1, keepdim=False).permute(1, 0).contiguous()  # Ba,N,D,L -> D,N
+        da = da.sum(dim=-1)
+        grad_output_y_reduced = grad_output_y.sum(dim=-1)
+        grad_output_y_reduced = grad_output_y_reduced.expand(-1, da.shape[1], -1)
+        da = da * grad_output_y_reduced  # Ba, N, D
+        da = da.sum(dim=0, keepdim=False).permute(1, 0).contiguous()  # Ba,N,D -> D,N
 
         db = db * grad_output_y  # Ba,N,1,L * Ba,1,D,L -> Ba,N,D,L we need Ba,L,N
         db = db.sum(-2, keepdim=False).permute(0, 2, 1).contiguous()  # Ba,N,D,L -> Ba,L,N
