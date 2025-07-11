@@ -26,10 +26,6 @@ def reshape_inputs(a, b, c, delta, x, y=None, rev=False):
     if rev:
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
-        "b must have shape (Ba,N,D,L)"
-        # assert b.shape == c.shape == (Ba, N, 1, L)
-        # assert a.shape == (Ba, N, D, 1)
-        # assert delta.shape == x.shape == (Ba, 1, D, L), "delta and x must have shape (Ba, 1, D, L)"
 
         # a: (Ba, N, D, 1) -> (D, N)
         a = a[:, :, :, 0].permute(2, 1, 0).mean(dim=2).contiguous()  # average over batch
@@ -47,11 +43,6 @@ def reshape_inputs(a, b, c, delta, x, y=None, rev=False):
         Ba, L, D = x.shape
         _, _, N = b.shape
 
-        # assert b.shape == (Ba, L, N), "b must have shape (Ba, L, N)"
-        # assert c.shape == (Ba, L, N), "c must have shape (Ba, L, N)"
-        # assert delta.shape == (Ba, L, D), "delta must have shape (Ba, L, D)"
-        # assert a.shape == (D, N), "a must have shape (D, N)"
-
         x = x.permute(0, 2, 1).unsqueeze(1).contiguous().cuda()
         y = x  # (Ba, 1, D, L)
         delta = delta.permute(0, 2, 1).unsqueeze(1).contiguous().cuda()  # (Ba, 1, D, L)
@@ -63,6 +54,7 @@ def reshape_inputs(a, b, c, delta, x, y=None, rev=False):
 
 
 # utilities for blockwise upsweep
+# See https://developer.nvidia.com/gpugems/gpugems3/part-vi-gpu-computing/chapter-39-parallel-prefix-sum-scan-cuda
 @triton.jit
 def rol(a1, b1_last, b1_cur, a2, b2_last, b2_cur):
     return a1 + a2, tl.where(a2 == 1, b1_cur, 0) + b2_last, b2_cur
@@ -76,11 +68,8 @@ def roll(y, dim, rev=0):
 
 @triton.jit
 def ssm_scan(h1, h2, h2_0, rev: tl.constexpr = 0, dim: tl.constexpr = 0):
-    # Optional flip direction
-    # tl.static_print(h2.shape[dim])
     # Apply initial
     n1, n2 = first_order_op(tl.zeros_like(h1) + 1.0, h2_0, h1, h2)
-
     # Scan
     h1, h2 = tl.associative_scan((n1, n2), dim, first_order_op, reverse=rev)
     return h1, h2
@@ -90,8 +79,7 @@ def ssm_scan(h1, h2, h2_0, rev: tl.constexpr = 0, dim: tl.constexpr = 0):
 def discretize_tt(a, b, delta):
     da = delta * a
     a_ = tl.exp(da)
-    # a_ = da
-    b_ = b * delta
+    b_ = b * delta  # approximation of b_
     return a_, b_
 
 
@@ -99,13 +87,9 @@ def discretize_tt(a, b, delta):
 def discretize_back(a, b, d, da_, db_):
     da = d * a
     a_ = tl.exp(da)
-    # a_ = da
     da_da = d * a_
     da_ddelta = a * a_
 
-    inter = (b * (da - 1) * a_ + b) / da
-
-    # db_da = 0
     db_db = d
     db_ddelta = b
 
