@@ -39,7 +39,7 @@ class SelectiveScan(torch.autograd.Function):
         else:
             num_stages = 2
 
-        BLOCKSIZE = 32
+        BLOCKSIZE = 16
 
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
@@ -136,7 +136,7 @@ class SelectiveScan(torch.autograd.Function):
             num_stages = 2
 
         # we need to hardwire BLOCKSIZE since we need to know the number of Blocks
-        BLOCKSIZE = 32
+        BLOCKSIZE = 16
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
