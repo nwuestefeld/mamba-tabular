@@ -39,24 +39,25 @@ class SelectiveScan(torch.autograd.Function):
         else:
             num_stages = 2
 
-        BLOCKSIZE = 16
+        BLOCKSIZE = 32
 
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
             padded = True
 
-        if D >= 64:
+        if D >= 32:
             D_step = 16
         else:
             D_step = D
 
         # make placeholders
-        dx, db, dc, ddelta = (torch.zeros_like(b).float().cuda() for b in [x, b, c, delta])
-        da = torch.zeros(Ba, N, D, BLOCKS).float().cuda()
-        y, dy = (torch.ones(Ba, 1, D, L).float().cuda() for _ in range(2))
-        h, dh = (torch.zeros(2, 2, Ba, N, D, BLOCKS).float().cuda() for _ in range(2))
-
+        dx, db, dc, ddelta = None, None, None, None
+        # (torch.zeros_like(b).float().cuda() for b in [x, b, c, delta])
+        da = None
+        # torch.zeros(Ba, N, D, BLOCKS).float().cuda()
+        y, dy = (torch.ones(Ba, 1, D, L, dtype=torch.float16, device="cuda") for _ in range(2))
+        h, dh = (torch.zeros(2, 2, Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda") for _ in range(2))
         # with padding
 
         mamba_tt[(BLOCKS, Ba)](
@@ -85,7 +86,7 @@ class SelectiveScan(torch.autograd.Function):
             N=N,
         )
         reduce(h, False, Ba * N * D)
-        reduce(dh, True, Ba * N * D)
+        # reduce(dh, True, Ba * N * D)
         mamba_tt[(BLOCKS, Ba)](
             x,
             dx,
@@ -139,14 +140,14 @@ class SelectiveScan(torch.autograd.Function):
             BLOCKS = BLOCKS + 1
             padded = True
 
-        if D >= 64:
+        if D >= 32:
             D_step = 16
         else:
             D_step = D
-        dx, da, db, dc, ddelta = (torch.zeros_like(b).float().cuda() for b in [x, a, b, c, delta])
-        da = torch.zeros(Ba, N, D, L).float().cuda()
-        y, dy = (torch.ones(Ba, 1, D, L).float().cuda() for _ in range(2))
-        h, dh = (torch.zeros(2, 2, Ba, N, D, BLOCKS).float().cuda() for _ in range(2))
+        dx, db, dc, ddelta = (torch.zeros_like(b).half().cuda() for b in [x, b, c, delta])
+        da = torch.zeros(Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda")
+        y, dy = (torch.ones(Ba, 1, D, L, dtype=torch.float16, device="cuda") for _ in range(2))
+        h, dh = (torch.zeros(2, 2, Ba, N, D, BLOCKS, dtype=torch.float16, device="cuda") for _ in range(2))
         # assert BLOCKS == SEQLEN // K
         mamba_tt[(BLOCKS, Ba)](
             x,

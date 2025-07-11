@@ -67,8 +67,9 @@ def mamba_tt(
     c = tl.load(C + Nx1xK, mask=mask, other=0.0)
 
     # init grad outputs
-    db_out = tl.zeros_like(b)
-    dc_out = tl.zeros_like(c)
+    if back == 1:
+        db_out = tl.zeros_like(b)
+        dc_out = tl.zeros_like(c)
 
     for did in range(0, D // D_step):
         a = tl.load(A + NxDx1)  # no masking needed.
