@@ -34,14 +34,12 @@ class SelectiveScan(torch.autograd.Function):
 
         # staging bounds are based on gut feeling. Might need to be adjusted
         # use async instruction copy. May lead to less comparibility with older hardware
-        if N * D <= 256:
+        if N * D > 1024:
             num_stages = 1
-        elif N * D <= 1024:
-            num_stages = 2
         else:
-            num_stages = 3
+            num_stages = 2
 
-        BLOCKSIZE = 16
+        BLOCKSIZE = 32
 
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
@@ -132,15 +130,13 @@ class SelectiveScan(torch.autograd.Function):
         Ba, _, D, L = x.shape
         _, N, _, _ = b.shape
 
-        if N * D <= 256:
+        if N * D > 1024:
             num_stages = 1
-        elif N * D <= 1024:
-            num_stages = 2
         else:
-            num_stages = 3
+            num_stages = 2
 
         # we need to hardwire BLOCKSIZE since we need to know the number of Blocks
-        BLOCKSIZE = 16
+        BLOCKSIZE = 32
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
