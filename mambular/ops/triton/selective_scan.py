@@ -39,7 +39,7 @@ class SelectiveScan(torch.autograd.Function):
         else:
             num_stages = 2
 
-        BLOCKSIZE = 32
+        BLOCKSIZE = 16
 
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
@@ -47,7 +47,7 @@ class SelectiveScan(torch.autograd.Function):
             padded = True
 
         if D >= 64:
-            D_step = 8
+            D_step = 16
         else:
             D_step = D
 
@@ -139,8 +139,8 @@ class SelectiveScan(torch.autograd.Function):
             BLOCKS = BLOCKS + 1
             padded = True
 
-        if D >= 16:
-            D_step = 8
+        if D >= 64:
+            D_step = 16
         else:
             D_step = D
         dx, da, db, dc, ddelta = (torch.zeros_like(b).float().cuda() for b in [x, a, b, c, delta])
