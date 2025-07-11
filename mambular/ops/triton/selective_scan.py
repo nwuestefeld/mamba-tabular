@@ -41,7 +41,7 @@ class SelectiveScan(torch.autograd.Function):
         else:
             num_stages = 3
 
-        BLOCKSIZE = 64
+        BLOCKSIZE = 16
 
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
@@ -140,7 +140,7 @@ class SelectiveScan(torch.autograd.Function):
             num_stages = 3
 
         # we need to hardwire BLOCKSIZE since we need to know the number of Blocks
-        BLOCKSIZE = 64
+        BLOCKSIZE = 16
         BLOCKS = math.ceil(L / BLOCKSIZE)
         if BLOCKS % 2 != 0:
             BLOCKS = BLOCKS + 1
@@ -217,25 +217,25 @@ class SelectiveScan(torch.autograd.Function):
         if d is not None:
             dd = x
             dd = dd * grad_output_y  # Ba,1,D,L*Ba,1,D,L
-            dd = dd.squeeze(1).sum((0, 2), keepdim=False).contiguous()  # Ba,1,D,L -> D
+            dd = dd.squeeze(1).sum((0, 2), keepdim=False)  # .contiguous()  # Ba,1,D,L -> D
         else:
             dd = None
         dx = dx * grad_output_y  # Ba,1,D,L * Ba,1,D,L -> Ba,1,D,L
-        dx = dx.squeeze(1).permute(0, 2, 1).contiguous()  # Ba,1,D,L -> Ba,L,D
+        dx = dx.squeeze(1).permute(0, 2, 1)  # .contiguous()  # Ba,1,D,L -> Ba,L,D
 
         da = da.sum(dim=-1)
         grad_output_y_reduced = grad_output_y.sum(dim=-1)
         grad_output_y_reduced = grad_output_y_reduced.expand(-1, da.shape[1], -1)
         da = da * grad_output_y_reduced  # Ba, N, D
-        da = da.sum(dim=0, keepdim=False).permute(1, 0).contiguous()  # Ba,N,D -> D,N
+        da = da.sum(dim=0, keepdim=False).permute(1, 0)  # .contiguous()  # Ba,N,D -> D,N
 
         db = db * grad_output_y  # Ba,N,1,L * Ba,1,D,L -> Ba,N,D,L we need Ba,L,N
-        db = db.sum(-2, keepdim=False).permute(0, 2, 1).contiguous()  # Ba,N,D,L -> Ba,L,N
+        db = db.sum(-2, keepdim=False).permute(0, 2, 1)  # .contiguous()  # Ba,N,D,L -> Ba,L,N
 
         dc = dc * grad_output_y  # Ba,N,1,L * Ba,1,D,L -> Ba,N,D,L we need Ba,L,N
-        dc = dc.sum(-2, keepdim=False).permute(0, 2, 1).contiguous()  # Ba,N,D,L -> Ba,L,N
+        dc = dc.sum(-2, keepdim=False).permute(0, 2, 1)  # .contiguous()  # Ba,N,D,L -> Ba,L,N
 
         ddelta = ddelta * grad_output_y  # Ba,1,D,L * Ba,1,D,L -> Ba,1,D,L we need Ba,L,D
-        ddelta = ddelta.squeeze(1).permute(0, 2, 1).contiguous()
+        ddelta = ddelta.squeeze(1).permute(0, 2, 1)  # .contiguous()
 
         return dx, da, db, dc, ddelta, dd
