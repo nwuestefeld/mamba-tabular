@@ -110,7 +110,7 @@ def mamba_tt(
             da, db, ddelta = discretize_back(a, b, delta, dh * rh2, dh * x)
             # Save (sums keep_dims=1): can be optimized further.
             tl.store(dX + DxK, tl.sum(b_ * dh, 0, 1), mask=mask)
-            tl.store(dA + NxDx1_H, tl.sum(da, 2, 1), mask=mask)
+            tl.store(dA + NxDx1_H, tl.sum(da, 2, 1))  # note: no L dimension, since we sum over it
             tl.store(dDelta + DxK, tl.sum(ddelta, 0, 1), mask=mask)
             db_out = db_out + tl.sum(db, 1, 1)
             dc_out = dc_out + dc
