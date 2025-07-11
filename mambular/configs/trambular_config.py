@@ -156,6 +156,9 @@ class DefaultTrambularConfig:
         if self.lr <= 0 or self.weight_decay < 0:
             raise ValueError("Learning rate and weight decay must be non-negative.")
 
+        if self.mamba_version == "mamba-triton" and (self.d_model % 2 != 0 or self.d_state % 2 != 0):
+            raise ValueError("d_model and d_state must be even integers for proper tensor operations.")
+
         if self.mamba_version == "mamba-triton" and not torch.cuda.is_available():
             raise ValueError(
                 "Mamba Triton requires CUDA, but it is not available. "

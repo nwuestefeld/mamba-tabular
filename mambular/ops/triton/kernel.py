@@ -89,7 +89,7 @@ def mamba_tt(
             tl.store(H + 1 * h_off + NxDx1_H + 0 * Ks, h2, Ks == K - 1)
         if step == 2:
             y = tl.sum(c * h2, 0, 1)  # Optional: integrate skip connection here for performance
-            tl.store(Y + DxK, y)
+            tl.store(Y + DxK, y, mask=mask)  # store output
 
         # #Compute backward (fused bwd-fwd design since we use recomputation)
         if back == 1:
@@ -108,14 +108,14 @@ def mamba_tt(
             rh2 = roll(h2, 2)
             rh2 = h2_0 * (Ks == 0) + rh2 * (Ks > 0)
             da, db, ddelta = discretize_back(a, b, delta, dh * rh2, dh * x)
-            # Save (sums keep_dims=1)
-            tl.store(dX + DxK, tl.sum(b_ * dh, 0, 1))
-            tl.store(dA + NxDx1_H, tl.sum(da, 2, 1))
-            tl.store(dDelta + DxK, tl.sum(ddelta, 0, 1))
+            # Save (sums keep_dims=1): can be optimized further.
+            tl.store(dX + DxK, tl.sum(b_ * dh, 0, 1), mask=mask)
+            tl.store(dA + NxDx1_H, tl.sum(da, 2, 1), mask=mask)
+            tl.store(dDelta + DxK, tl.sum(ddelta, 0, 1), mask=mask)
             db_out = db_out + tl.sum(db, 1, 1)
             dc_out = dc_out + dc
         Ds = Ds + D_step
 
     if back == 1 and step == 2:
-        tl.store(dB + Nx1xK, db_out)
-        tl.store(dC + Nx1xK, dc_out)
+        tl.store(dB + Nx1xK, db_out, mask=mask)
+        tl.store(dC + Nx1xK, dc_out, mask=mask)
